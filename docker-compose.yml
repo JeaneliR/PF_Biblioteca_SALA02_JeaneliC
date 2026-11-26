@@ -1,0 +1,20 @@
+services:
+  api:
+    build: .
+    env_file: .env
+    ports: ["8000:8000"]
+    volumes: ["datos:/data"]
+    command: sh -c "python scripts/cargar_fichas.py data/fichas_rpa_ejemplo.csv && uvicorn app.api:app --host 0.0.0.0 --port 8000"
+  ui:
+    build: .
+    env_file: .env
+    ports: ["8501:8501"]
+    volumes: ["datos:/data"]
+    command: env PYTHONPATH=/srv streamlit run app/ui.py --server.port 8501 --server.address 0.0.0.0
+    depends_on: [api]
+  catalogo:
+    image: nginx:1.27-alpine
+    ports: ["8080:80"]
+    volumes: ["./catalogo_web:/usr/share/nginx/html:ro"]
+volumes:
+  datos:

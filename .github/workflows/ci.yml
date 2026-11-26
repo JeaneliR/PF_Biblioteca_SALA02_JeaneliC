@@ -1,0 +1,41 @@
+name: CI-CD simulado
+on:
+  push: {branches: [main, "feature/**", "bloqueo/**"]}
+  pull_request: {branches: [main]}
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir imagen Docker
+        run: docker build -t biblioteca-iluminacion:${{ github.sha }} .
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Pruebas automáticas (reglas, API, IA, interfaz)
+        run: python -m pytest -q
+  seguridad:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install bandit==1.8.0 pyyaml==6.0.2
+      - name: Control de seguridad (bandit, sin hallazgos medios/altos)
+        run: bandit -q -ll -r app simulador scripts
+      - name: Validar IaC
+        run: python scripts/validar_iac.py
+  despliegue-simulado:
+    needs: [construir, pruebas, seguridad]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Despliegue simulado (solo si pasaron todos los controles)
+        run: |
+          echo "Aplicando infra/sala02.k8s.yaml (simulado)"
+          echo "Imagen biblioteca-iluminacion:${{ github.sha }} desplegada en entorno de demostración"

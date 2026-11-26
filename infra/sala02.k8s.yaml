@@ -1,0 +1,31 @@
+# Definición declarativa del servicio de lecturas (IaC). Validar con: python scripts/validar_iac.py
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: biblioteca-config
+  labels: {app: biblioteca-iluminacion}
+data:
+  TZ_SEDE: America/Lima
+  UMBRAL_LUX: "300"
+  HORARIO_SERVICIO: "08:00 a 20:00"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: biblioteca-api
+  labels: {app: biblioteca-iluminacion}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: biblioteca-iluminacion}
+  template:
+    metadata:
+      labels: {app: biblioteca-iluminacion}
+    spec:
+      containers:
+        - name: api
+          image: biblioteca-iluminacion:1.0
+          ports: [{containerPort: 8000}]
+          envFrom: [{configMapRef: {name: biblioteca-config}}]
+          securityContext: {runAsNonRoot: true, allowPrivilegeEscalation: false}
+          readinessProbe: {httpGet: {path: /health, port: 8000}}
