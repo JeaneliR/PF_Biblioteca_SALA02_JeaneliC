@@ -6,7 +6,7 @@ metadata:
   labels: {app: biblioteca-iluminacion}
 data:
   TZ_SEDE: America/Lima
-  UMBRAL_LUX: "300"
+  UMBRAL_LUX: "250"
   HORARIO_SERVICIO: "08:00 a 20:00"
 ---
 apiVersion: apps/v1
