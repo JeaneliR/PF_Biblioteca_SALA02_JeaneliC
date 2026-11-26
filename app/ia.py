@@ -126,6 +126,6 @@ def cadena(nota: str, lectura: dict, variante: str = "few_shot") -> dict:
         clasif = "MODERADA" if lectura["lux"] >= 150 else "CRITICA"
         accion = "Revisar y reemplazar luminarias de la sala."
     else:
-        clasif = limpiar_json(_gemini([{"text": PROMPT_CLASIFICAR.format(resumen=resumen, lux=lectura["lux"])}])).get("clasificacion", "")
-        accion = limpiar_json(_gemini([{"text": PROMPT_ACCION.format(resumen=resumen, clasificacion=clasif)}])).get("accion_sugerida", "")
+        clasif = limpiar_json(_gemini([{"text": PROMPT_CLASIFICAR.replace("{resumen}", str(resumen)).replace("{lux}", str(lectura["lux"]))}])).get("clasificacion", "")
+        accion = limpiar_json(_gemini([{"text": PROMPT_ACCION.replace("{resumen}", str(resumen)).replace("{clasificacion}", str(clasif))}])).get("accion_sugerida", "")
     return {"json": paso1, "validacion": val, "clasificacion": clasif, "accion_sugerida": accion, "variante": variante}
